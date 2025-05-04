@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QMap>
+#include <QVariant>
 
 
 class ConfigurationObject : public QObject {
@@ -24,6 +26,10 @@ class ConfigurationObject : public QObject {
 
  private:
   QString configFilePath_;
+  QMap<QString, QVariant> config_;
+
+    void parseConfig();
+    void saveConfig() const;
 };
 
 #endif  // CONFIGURATIONOBJECT_H
