@@ -2,22 +2,18 @@
 #define CONFIGURATIONOBJECT_H
 
 #include <QObject>
-#include <QString>
 #include <QMap>
 #include <QVariant>
 #include <QDBusVariant>
-
-
 
 class ConfigurationObject : public QObject {
   Q_OBJECT
   Q_CLASSINFO("D-Bus Interface",
               "com.system.configurationManager.Application.Configuration")
-    Q_PROPERTY(QString configFileName READ configFileName WRITE setConfigFileName)
-
+    Q_PROPERTY(QString configFileName READ configFileName CONSTANT)
 
 public:
-  ConfigurationObject(const QString& configFilePath, QObject* parent = nullptr);
+  explicit ConfigurationObject(const QString& configFilePath, QObject* parent = nullptr);
 
  public slots:
   QString readConfig() const;
@@ -27,11 +23,16 @@ public:
 
     QMap<QString, QVariant> GetConfiguration() const;
     void ChangeConfiguration(const QString& key, const QDBusVariant& value);
+
  signals:
+    void configurationChanged(const QVariantMap &configuration);
   void configUpdated(const QString& newContent);
 
  private:
   QString configFilePath_;
+    QVariantMap configuration_;
+    QString name_;
+    QString version_;
 
 };
 

@@ -10,6 +10,8 @@
 
 int main(int argc, char* argv[]) {
     qRegisterMetaType<QVariant>("QVariant");
+//    qDBusRegisterMetaType<QVariant>();
+    qDBusRegisterMetaType<QVariantMap>();
 
   QCoreApplication app(argc, argv);
 

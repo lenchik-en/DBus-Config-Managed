@@ -30,7 +30,8 @@ dbus-send --session \
   string:"General/version" variant:string:"1.4.4"
 
 echo "Проверка изменения файла..."
-if grep -Eq "^\s*version *= *1\.4\.4" "$CONFIG_FILE"; then
+sleep 1
+if grep -q "version=1.4.4" "$CONFIG_FILE"; then
   echo "Файл успешно обновлён (найден version=1.4.4)"
 else
   echo "Ошибка: файл не содержит version=1.4.4"
@@ -39,16 +40,26 @@ else
   exit 1
 fi
 
+
+#if grep -Eq "^\s*version *= *1\.4\.4" "$CONFIG_FILE"; then
+#  echo "Файл успешно обновлён (найден version=1.4.4)"
+#else
+#  echo "Ошибка: файл не содержит version=1.4.4"
+#  echo "Содержимое файла:"
+#  cat "$CONFIG_FILE"
+#  exit 1
+#fi
+
 echo "Проверка свойства configFileName..."
 gdbus call --session --dest "$SERVICE" --object-path "$OBJ" \
   --method org.freedesktop.DBus.Properties.Get "$IFACE" configFileName
 
-echo "Проверка сигнала configUpdated..."
+echo "Проверка сигналов configUpdated и configurationChanged..."
 
 SIGNAL_LOG=$(mktemp)
 
-# подписка через dbus-monitor — НАДЁЖНО
-( timeout 5 dbus-monitor "interface=$IFACE,member=configUpdated" > "$SIGNAL_LOG" ) &
+# подписываемся на оба сигнала
+( timeout 5 dbus-monitor "interface=$IFACE" > "$SIGNAL_LOG" ) &
 
 MONITOR_PID=$!
 sleep 0.5
@@ -63,15 +74,29 @@ dbus-send --session \
 
 wait $MONITOR_PID || true
 
+# Проверка сигналов
+CONFIG_UPDATED_OK=false
+CONFIG_CHANGED_OK=false
+
 if grep -q "member=configUpdated" "$SIGNAL_LOG"; then
   echo "Сигнал configUpdated получен"
+  CONFIG_UPDATED_OK=true
 else
-  echo " Сигнал configUpdated не получен вовремя"
-  echo "Лог сигнала:"
-  cat "$SIGNAL_LOG"
+  echo "Сигнал configUpdated не получен вовремя"
+fi
+
+if grep -q "member=configurationChanged" "$SIGNAL_LOG"; then
+  echo "Сигнал configurationChanged получен"
+  CONFIG_CHANGED_OK=true
+else
+  echo "Сигнал configurationChanged не получен вовремя"
 fi
 
 rm "$SIGNAL_LOG"
 
+if ! $CONFIG_UPDATED_OK || ! $CONFIG_CHANGED_OK; then
+  echo "Ошибка: один или оба сигнала не были получены"
+  exit 1
+fi
 
 echo "Все тесты пройдены!"
