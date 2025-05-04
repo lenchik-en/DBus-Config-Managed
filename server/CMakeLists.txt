@@ -1,5 +1,5 @@
 set (SOURCE main.cpp
-            ConfigurationObject.cpp)
+        ConfigurationObject.cpp)
 
 set (HEADER ConfigurationObject.h)
 
