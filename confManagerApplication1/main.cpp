@@ -17,8 +17,7 @@ class ConfigReceiver : public QObject {
 
  public slots:
   void onConfigurationChanged(const QVariantMap& config) {
-    qDebug()
-        << "Получен сигнал configurationChanged:";
+    qDebug() << "Получен сигнал configurationChanged:";
     for (auto it = config.constBegin(); it != config.constEnd(); ++it) {
       qDebug() << " • " << it.key() << "=" << it.value().toString();
     }
