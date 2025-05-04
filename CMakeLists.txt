@@ -8,3 +8,4 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(Qt5 REQUIRED COMPONENTS Core DBus)
 
 add_subdirectory(server)
+add_subdirectory(confManagerApplication1)
